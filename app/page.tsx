@@ -524,23 +524,30 @@ function LocalProof() {
 
         <div className="local-proof__grid" data-reveal>
           <figure className="local-proof__showcase">
-            <img
-              src="/images/localpro-door-consultation.png"
-              alt="Real estate professional opening the door of a premium Texas home"
-              loading="lazy"
-            />
-            <figcaption className="local-proof__float">
-              <b>4</b>
-              <span>market signals</span>
-            </figcaption>
-            <div className="local-proof__pathbar" aria-label="LocalPRO lead paths">
+            <div className="local-proof__image">
+              <img
+                src="/images/localpro-door-consultation.png"
+                alt="Real estate professional opening the door of a premium Texas home"
+                loading="lazy"
+              />
+              <figcaption className="local-proof__float">
+                <b>4</b>
+                <span>market signals</span>
+              </figcaption>
+            </div>
+            <div className="local-proof__signalbar" aria-label="LocalPRO lead paths">
+              <span>
+                <small>Lead paths</small>
+                <b>Buy, sell, and valuation</b>
+              </span>
               <div>
                 {proofHighlights.map((item) => (
-                  <span key={item.title}>{item.title[0]}</span>
+                  <span key={item.title}>
+                    <b>{item.title}</b>
+                    <small>{item.body}</small>
+                  </span>
                 ))}
-                <span>+</span>
               </div>
-              <p>Buy · Sell · Valuation</p>
             </div>
           </figure>
 
