@@ -147,6 +147,28 @@ const intentSlides = [
   },
 ];
 
+const proofStats = [
+  ["Average Sales Price", "$826K"],
+  ["Median Sales Price", "$449K"],
+  ["Total Listings", "5,441"],
+  ["Population", "1.29M"],
+];
+
+const proofHighlights = [
+  {
+    title: "Local market reports",
+    body: "Average price, median price, active inventory, and population stay visible without making buyers dig.",
+  },
+  {
+    title: "Search with intent",
+    body: "Buy, sell, and valuation paths keep each visitor pointed toward a clear next action.",
+  },
+  {
+    title: "PRO follow-up",
+    body: "The first conversation starts with market context, not a cold form submission.",
+  },
+];
+
 function clamp01(value: number) {
   return Math.max(0, Math.min(1, value));
 }
@@ -459,7 +481,7 @@ function Markets() {
                 <img src={area.image} alt={`${area.city}, Texas city view`} loading="lazy" />
                 <span className="area-card__shade" />
                 <span className="area-card__content">
-                  <span className="area-card__eyebrow">Texas market</span>
+                  <span className="area-card__eyebrow">Texas</span>
                   <strong>{area.city}</strong>
                   <span className="area-card__note">{area.note}</span>
                   <span className="area-card__stats">
@@ -484,6 +506,54 @@ function Markets() {
           <button type="button" onClick={() => cycle(1)} aria-label="Next featured area">
             ›
           </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LocalProof() {
+  return (
+    <section className="local-proof" aria-labelledby="local-proof-title">
+      <div className="local-proof__inner">
+        <div className="local-proof__intro" data-reveal>
+          <p className="kicker">LocalPRO advantage</p>
+          <h2 id="local-proof-title">A local market experience that feels prepared before the call.</h2>
+        </div>
+
+        <div className="local-proof__grid" data-reveal>
+          <figure className="local-proof__media">
+            <img
+              src="/images/localpro-door-consultation.png"
+              alt="Real estate professional opening the door of a premium Texas home"
+              loading="lazy"
+            />
+          </figure>
+
+          <div className="local-proof__panel">
+            <p>
+              LocalPRO already gives visitors the signals that matter inside each neighborhood page. This section
+              keeps those same decision points close to the brand story instead of hiding them behind another click.
+            </p>
+
+            <div className="local-proof__stats" aria-label="LocalPRO market snapshot fields">
+              {proofStats.map(([label, value]) => (
+                <span key={label}>
+                  <small>{label}</small>
+                  <b>{value}</b>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="local-proof__cards" data-reveal>
+          {proofHighlights.map((item) => (
+            <article key={item.title}>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -546,9 +616,6 @@ function Contact() {
         </div>
       </div>
 
-      <div className="work-together__photo" data-reveal>
-        <img src="/texas.png" alt="Texas market collage for LocalPRO Realty" />
-      </div>
     </footer>
   );
 }
@@ -561,6 +628,7 @@ export default function Page() {
       <ShellNav />
       <Hero />
       <Markets />
+      <LocalProof />
       <Contact />
     </main>
   );
