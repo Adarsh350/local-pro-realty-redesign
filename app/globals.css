@@ -712,7 +712,7 @@ input {
   padding: 128px 7vw 118px;
   border-top: 1px solid rgba(243, 238, 228, 0.1);
   background:
-    radial-gradient(ellipse at 10% 8%, rgba(96, 83, 210, 0.22), transparent 38%),
+    radial-gradient(ellipse at 8% 10%, rgba(199, 165, 106, 0.12), rgba(22, 43, 31, 0.08) 32%, transparent 54%),
     linear-gradient(180deg, #060807 0%, #090d0a 48%, #050706 100%);
   color: var(--porcelain);
   overflow: hidden;
@@ -731,8 +731,8 @@ input {
   left: -180px;
   width: min(620px, 56vw);
   height: 430px;
-  background: linear-gradient(135deg, rgba(92, 72, 219, 0.28), rgba(23, 60, 51, 0.08), transparent 72%);
-  filter: blur(28px);
+  background: linear-gradient(135deg, rgba(199, 165, 106, 0.16), rgba(25, 57, 40, 0.1), transparent 74%);
+  filter: blur(30px);
   pointer-events: none;
 }
 
