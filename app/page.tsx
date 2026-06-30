@@ -155,12 +155,6 @@ function easeOut(value: number) {
   return 1 - Math.pow(1 - value, 3);
 }
 
-function phaseOpacity(progress: number, inStart: number, inEnd: number, outStart: number, outEnd: number) {
-  const inValue = easeOut(clamp01((progress - inStart) / (inEnd - inStart)));
-  const outValue = easeOut(clamp01((progress - outStart) / (outEnd - outStart)));
-  return inValue * (1 - outValue);
-}
-
 function useReveal() {
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -324,7 +318,7 @@ function Hero() {
       }
 
       if (phaseTwoRef.current) {
-        const opacity = phaseOpacity(progress, 0.22, 0.34, 0.96, 1);
+        const opacity = easeOut(clamp01((progress - 0.22) / 0.12));
         const move = 1 - easeOut(clamp01((progress - 0.22) / 0.12));
         phaseTwoRef.current.style.opacity = `${opacity}`;
         phaseTwoRef.current.style.transform = `translate3d(0, ${42 * move}px, 0)`;
@@ -443,13 +437,14 @@ function Markets() {
             const slot = visibleSlot(index);
             const position = slot === null ? null : fanPositions[slot];
             const active = index === centerIndex;
+            const sideClass = active || slot === null ? "" : slot < centerSlot ? " is-left" : " is-right";
             const transform = position
               ? `translate3d(calc(-50% + ${position.x * multiplier}px), calc(-50% + ${position.y * multiplier}px), 0) rotate(${position.rot}deg) scale(${position.scale})`
               : "translate3d(-50%, -50%, 0) scale(0.62)";
 
             return (
               <button
-                className={`area-card ${active ? "is-active" : ""}`}
+                className={`area-card ${active ? "is-active" : ""}${sideClass}`}
                 key={area.city}
                 type="button"
                 onClick={() => setCenterIndex(index)}

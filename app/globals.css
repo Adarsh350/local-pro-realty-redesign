@@ -125,7 +125,7 @@ input {
 }
 
 .hero-scroll {
-  height: 210vh;
+  height: 180vh;
   background: var(--night);
 }
 
@@ -625,12 +625,23 @@ input {
   padding: 22px;
 }
 
+.area-card.is-left:not(.is-active) .area-card__content {
+  padding-right: 42%;
+  text-align: left;
+}
+
+.area-card.is-right:not(.is-active) .area-card__content {
+  justify-items: end;
+  padding-left: 42%;
+  text-align: right;
+}
+
 .area-card:not(.is-active) strong {
-  font-size: 2.05rem;
+  font-size: 1.95rem;
 }
 
 .area-card:not(.is-active) .area-card__note {
-  max-width: 92%;
+  max-width: 100%;
   color: rgba(243, 238, 228, 0.7);
   font-size: 0.72rem;
   line-height: 1.34;
