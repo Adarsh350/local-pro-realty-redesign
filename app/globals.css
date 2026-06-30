@@ -177,17 +177,6 @@ input {
   mask-image: linear-gradient(90deg, black, transparent 74%);
 }
 
-.hero-sidecopy {
-  position: absolute;
-  right: 40px;
-  bottom: 38px;
-  display: grid;
-  gap: 8px;
-  color: rgba(243, 238, 228, 0.58);
-  font-size: 0.78rem;
-  text-align: right;
-}
-
 .phase {
   position: absolute;
   inset: 0;
@@ -1056,30 +1045,6 @@ input {
   text-align: center;
 }
 
-.work-together__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 34px;
-  color: rgba(243, 238, 228, 0.62);
-  transition: opacity 500ms ease, transform 500ms ease;
-}
-
-.work-together__status span {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #39c875;
-  box-shadow: 0 0 0 7px rgba(57, 200, 117, 0.12);
-}
-
-.work-together__status p {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .work-together__trigger {
   display: grid;
   justify-items: center;
@@ -1232,7 +1197,6 @@ input {
   font-weight: 650;
 }
 
-.work-together.is-clicked .work-together__status,
 .work-together.is-clicked .work-together__trigger,
 .work-together.is-clicked .work-together__intro {
   opacity: 0;
@@ -1357,10 +1321,6 @@ input {
 
   .hero-descriptor {
     font-size: 1rem;
-  }
-
-  .hero-sidecopy {
-    display: none;
   }
 
   .intent-switcher {

@@ -384,12 +384,6 @@ function Hero() {
           <img src="/images/hero-residence.png" alt="Premium Texas residence at sunset" />
         </div>
         <div className="hero-vignette" />
-        <div className="hero-sidecopy">
-          <span>Buy</span>
-          <span>Sell</span>
-          <span>Valuation</span>
-        </div>
-
         <div className="phase phase-one" ref={phaseOneRef}>
           <h1>Local Experts | PRO Results</h1>
           <p className="hero-descriptor">
@@ -606,11 +600,6 @@ function Contact() {
   return (
     <footer className={`work-together ${isClicked ? "is-clicked" : ""} ${showDetails ? "is-ready" : ""}`} id="contact">
       <div className="work-together__content" data-reveal>
-        <div className="work-together__status">
-          <span aria-hidden="true" />
-          <p>LocalPRO Realty</p>
-        </div>
-
         <button
           className="work-together__trigger"
           type="button"
