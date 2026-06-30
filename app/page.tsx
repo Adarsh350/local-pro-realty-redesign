@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 
 const featuredAreas = [
   {
@@ -156,16 +156,16 @@ const proofStats = [
 
 const proofHighlights = [
   {
-    title: "Local market reports",
-    body: "Average price, median price, active inventory, and population stay visible without making buyers dig.",
+    title: "Buy",
+    body: "Search by city, county, subdivision, school district, or property address.",
   },
   {
-    title: "Search with intent",
-    body: "Buy, sell, and valuation paths keep each visitor pointed toward a clear next action.",
+    title: "Sell",
+    body: "Launch with local pricing, presentation, and listing support.",
   },
   {
-    title: "PRO follow-up",
-    body: "The first conversation starts with market context, not a cold form submission.",
+    title: "Valuation",
+    body: "Turn a home address into a market-backed conversation.",
   },
 ];
 
@@ -516,44 +516,69 @@ function LocalProof() {
   return (
     <section className="local-proof" aria-labelledby="local-proof-title">
       <div className="local-proof__inner">
-        <div className="local-proof__intro" data-reveal>
-          <p className="kicker">LocalPRO advantage</p>
-          <h2 id="local-proof-title">A local market experience that feels prepared before the call.</h2>
-        </div>
+        <div className="local-proof__glow" aria-hidden="true" />
+        <p className="local-proof__lead" data-reveal>
+          LocalPRO helps buyers and sellers move faster by connecting city search, home valuation, and neighborhood
+          market data to one clear next step.
+        </p>
 
         <div className="local-proof__grid" data-reveal>
-          <figure className="local-proof__media">
+          <figure className="local-proof__showcase">
             <img
               src="/images/localpro-door-consultation.png"
               alt="Real estate professional opening the door of a premium Texas home"
               loading="lazy"
             />
+            <figcaption className="local-proof__float">
+              <b>4</b>
+              <span>market signals</span>
+            </figcaption>
+            <div className="local-proof__pathbar" aria-label="LocalPRO lead paths">
+              <div>
+                {proofHighlights.map((item) => (
+                  <span key={item.title}>{item.title[0]}</span>
+                ))}
+                <span>+</span>
+              </div>
+              <p>Buy · Sell · Valuation</p>
+            </div>
           </figure>
 
-          <div className="local-proof__panel">
-            <p>
-              LocalPRO already gives visitors the signals that matter inside each neighborhood page. This section
-              keeps those same decision points close to the brand story instead of hiding them behind another click.
-            </p>
-
-            <div className="local-proof__stats" aria-label="LocalPRO market snapshot fields">
-              {proofStats.map(([label, value]) => (
-                <span key={label}>
-                  <small>{label}</small>
-                  <b>{value}</b>
-                </span>
-              ))}
+          <aside className="local-proof__side">
+            <div className="local-proof__chart" aria-label="Dallas market snapshot">
+              <div className="local-proof__chart-card">
+                <small>Dallas market snapshot</small>
+                <strong>$826K</strong>
+                <em>Average Sales Price</em>
+                <div className="local-proof__bars" aria-hidden="true">
+                  {proofStats.map(([label, value], index) => (
+                    <span
+                      key={label}
+                      style={{ "--height": `${[68, 44, 76, 58][index]}%` } as CSSProperties}
+                      title={`${label}: ${value}`}
+                    />
+                  ))}
+                </div>
+                <div className="local-proof__mini-stats">
+                  {proofStats.slice(1).map(([label, value]) => (
+                    <span key={label}>
+                      <small>{label}</small>
+                      <b>{value}</b>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="local-proof__cards" data-reveal>
-          {proofHighlights.map((item) => (
-            <article key={item.title}>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
+            <h2 id="local-proof-title">Better local search with real market signals</h2>
+            <p>
+              The same fields LocalPRO surfaces inside its neighborhood pages stay close to the conversion path:
+              average sales price, median sales price, total listings, and population.
+            </p>
+            <a href="#markets" aria-label="Explore LocalPRO featured markets">
+              Explore LocalPRO markets <span aria-hidden="true">↗</span>
+            </a>
+          </aside>
         </div>
       </div>
     </section>
