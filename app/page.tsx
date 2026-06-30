@@ -324,7 +324,7 @@ function Hero() {
       }
 
       if (phaseTwoRef.current) {
-        const opacity = phaseOpacity(progress, 0.22, 0.34, 0.78, 0.94);
+        const opacity = phaseOpacity(progress, 0.22, 0.34, 0.96, 1);
         const move = 1 - easeOut(clamp01((progress - 0.22) / 0.12));
         phaseTwoRef.current.style.opacity = `${opacity}`;
         phaseTwoRef.current.style.transform = `translate3d(0, ${42 * move}px, 0)`;
@@ -375,16 +375,9 @@ function Hero() {
         </div>
 
         <div className="phase phase-one" ref={phaseOneRef}>
-          <p className="kicker">Local experts | Pro results</p>
-          <h1>
-            DFW Real Estate Brokerage,
-            <em> award-winning support</em>,
-            <em> industry-leading marketing</em>,
-            and <em>proven systems</em>.
-          </h1>
-          <p>
-            At Local Pro Realty, we're not just about buying and selling properties.
-            We're about making your real estate journey a seamless and rewarding experience.
+          <h1>Local Experts | PRO Results</h1>
+          <p className="hero-descriptor">
+            DFW Real Estate Brokerage, award-winning support, industry-leading marketing, and proven systems.
           </p>
         </div>
 
