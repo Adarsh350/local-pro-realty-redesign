@@ -1,6 +1,7 @@
 "use client";
 
-import { type CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, type MouseEvent, useEffect, useRef, useState } from "react";
+import { blogArticles } from "./blog-data";
 
 const featuredAreas = [
   {
@@ -147,28 +148,6 @@ const intentSlides = [
   },
 ];
 
-const proofStats = [
-  ["Average Sales Price", "$826K"],
-  ["Median Sales Price", "$449K"],
-  ["Total Listings", "5,441"],
-  ["Population", "1.29M"],
-];
-
-const proofHighlights = [
-  {
-    title: "Buy",
-    body: "Search by city, county, subdivision, school district, or property address.",
-  },
-  {
-    title: "Sell",
-    body: "Launch with local pricing, presentation, and listing support.",
-  },
-  {
-    title: "Valuation",
-    body: "Turn a home address into a market-backed conversation.",
-  },
-];
-
 const localProUrl = "https://localprorealty.com";
 
 const footerLinkGroups = [
@@ -250,30 +229,211 @@ function useReveal() {
   }, []);
 }
 
+type HeroIntent = "buy" | "sell" | "valuation";
+
+type NavItem = {
+  label: string;
+  href: string;
+  intent?: HeroIntent;
+  heroProgress?: number;
+};
+
+const navItems: NavItem[] = [
+  { label: "Home", href: "#top" },
+  { label: "Buy", href: "#buy", intent: "buy" },
+  { label: "Sell", href: "#sell", intent: "sell", heroProgress: 0.64 },
+  { label: "Valuation", href: "#valuation", intent: "valuation", heroProgress: 0.9 },
+  { label: "Markets", href: "#markets" },
+  { label: "About", href: "#about" },
+  { label: "News", href: "#blog" },
+  { label: "Contact", href: "#contact" },
+];
+
+function scrollToTarget(top: number) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+}
+
 function ShellNav() {
   const [solid, setSolid] = useState(false);
+  const [activeSection, setActiveSection] = useState("top");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const activeIntentRef = useRef<HeroIntent>("buy");
+
+  function activateHeroIntent(id: HeroIntent) {
+    if (activeIntentRef.current !== id) {
+      activeIntentRef.current = id;
+      window.dispatchEvent(new CustomEvent("localpro:intent", { detail: { id } }));
+    }
+
+    setActiveSection(id);
+  }
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > window.innerHeight * 0.72);
+    const onScroll = () => {
+      setSolid(window.scrollY > window.innerHeight * 0.72);
+
+      const hero = document.querySelector<HTMLElement>(".hero-scroll");
+      if (hero && window.scrollY < hero.offsetTop + hero.offsetHeight - window.innerHeight * 0.28) {
+        const range = Math.max(hero.offsetHeight - window.innerHeight, 1);
+        const progress = Math.min(Math.max((window.scrollY - hero.offsetTop) / range, 0), 1);
+
+        if (progress < 0.14) {
+          setActiveSection("top");
+        } else if (progress < 0.5) {
+          activateHeroIntent("buy");
+        } else if (progress < 0.8) {
+          activateHeroIntent("sell");
+        } else {
+          activateHeroIntent("valuation");
+        }
+
+        return;
+      }
+
+      const sections = [
+        ["markets", "markets"],
+        ["about", "about"],
+        ["blog", "blog"],
+        ["contact", "contact"],
+      ] as const;
+
+      const current = sections
+        .map(([id, key]) => {
+          const element = document.getElementById(id);
+          return element ? { key, top: Math.abs(element.getBoundingClientRect().top - 104) } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a!.top - b!.top)[0];
+
+      if (current) setActiveSection(current.key);
+    };
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle("nav-open", menuOpen);
+    return () => document.body.classList.remove("nav-open");
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const onIntentActive = (event: Event) => {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+      if (id !== "buy" && id !== "sell" && id !== "valuation") return;
+
+      activeIntentRef.current = id;
+
+      const hero = document.querySelector<HTMLElement>(".hero-scroll");
+      const inHero = hero && window.scrollY < hero.offsetTop + hero.offsetHeight - window.innerHeight * 0.28;
+      if (inHero) setActiveSection(id);
+    };
+
+    window.addEventListener("localpro:intent-active", onIntentActive);
+    return () => window.removeEventListener("localpro:intent-active", onIntentActive);
+  }, []);
+
+  function navigate(event: MouseEvent<HTMLAnchorElement>, item: NavItem) {
+    event.preventDefault();
+    setMenuOpen(false);
+    setActiveSection(item.intent ?? item.href.replace("#", ""));
+
+    if (item.href === "#top") {
+      scrollToTarget(0);
+      window.history.replaceState(null, "", item.href);
+      return;
+    }
+
+    if (item.intent) {
+      activeIntentRef.current = item.intent;
+      window.dispatchEvent(new CustomEvent("localpro:intent", { detail: { id: item.intent } }));
+      const hero = document.querySelector<HTMLElement>(".hero-scroll");
+      if (hero) {
+        const range = hero.offsetHeight - window.innerHeight;
+        scrollToTarget(hero.offsetTop + Math.max(range, 1) * (item.heroProgress ?? 0.34));
+      }
+      window.history.replaceState(null, "", item.href);
+      return;
+    }
+
+    const target = document.querySelector<HTMLElement>(item.href);
+    if (!target) return;
+    const offset = item.href === "#contact" ? 88 : item.href === "#markets" ? 112 : 82;
+    scrollToTarget(window.scrollY + target.getBoundingClientRect().top - offset);
+    window.history.replaceState(null, "", item.href);
+  }
+
   return (
-    <header className={`topbar ${solid ? "topbar--solid" : ""}`}>
-      <a href="#top" className="brand" aria-label="LocalPRO Realty home">
-        <strong>LocalPRO</strong>
-        <span>Realty</span>
-      </a>
-      <nav aria-label="Primary navigation">
-        <a href="#markets">Markets</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <a className="topbar__action" href="#contact">
-        Talk to a PRO
-      </a>
-    </header>
+    <>
+      <header className={`topbar ${solid ? "topbar--solid" : ""} ${menuOpen ? "topbar--menu-open" : ""}`}>
+        <a href="#top" className="brand" aria-label="LocalPRO Realty home" onClick={(event) => navigate(event, navItems[0])}>
+          <img src="/images/localpro-logo-transparent.png" alt="LocalPRO Realty" />
+        </a>
+        <nav aria-label="Primary navigation">
+          {navItems.map((item) => {
+            const key = item.intent ?? item.href.replace("#", "");
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                className={activeSection === key ? "is-active" : ""}
+                onClick={(event) => navigate(event, item)}
+              >
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
+        <a
+          className="topbar__action"
+          href="#contact"
+          onClick={(event) => navigate(event, { label: "Contact", href: "#contact" })}
+        >
+          <span className="topbar__action-desktop">Talk to a PRO</span>
+          <span className="topbar__action-mobile">Contact Us</span>
+        </a>
+        <button
+          className="topbar__menu-button"
+          type="button"
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
+          onClick={() => setMenuOpen((value) => !value)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </header>
+
+      <div className={`mobile-menu ${menuOpen ? "is-open" : ""}`} id="mobile-navigation" aria-hidden={!menuOpen}>
+        <div className="mobile-menu__panel">
+          <nav aria-label="Mobile navigation">
+            {navItems.map((item) => (
+              <a key={item.href} href={item.href} onClick={(event) => navigate(event, item)}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <a className="mobile-menu__contact" href="#contact" onClick={(event) => navigate(event, { label: "Contact", href: "#contact" })}>
+            Contact Us
+          </a>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -284,6 +444,12 @@ function IntentSwitcher() {
   const [address, setAddress] = useState("");
   const [status, setStatus] = useState("");
   const active = intentSlides[activeIndex];
+
+  function publishIntent(id: string) {
+    if (id === "buy" || id === "sell" || id === "valuation") {
+      window.dispatchEvent(new CustomEvent("localpro:intent-active", { detail: { id } }));
+    }
+  }
 
   useEffect(() => {
     intentSlides.forEach((slide) => {
@@ -299,12 +465,33 @@ function IntentSwitcher() {
     return () => window.clearTimeout(timer);
   }, [motionKey, previousIndex]);
 
+  useEffect(() => {
+    const onIntent = (event: Event) => {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+      const index = intentSlides.findIndex((slide) => slide.id === id);
+      if (index < 0) return;
+      publishIntent(intentSlides[index].id);
+
+      setActiveIndex((current) => {
+        if (current === index) return current;
+        setPreviousIndex(current);
+        setMotionKey((value) => value + 1);
+        setStatus("");
+        return index;
+      });
+    };
+
+    window.addEventListener("localpro:intent", onIntent);
+    return () => window.removeEventListener("localpro:intent", onIntent);
+  }, []);
+
   function choose(index: number) {
     if (index === activeIndex) return;
     setPreviousIndex(activeIndex);
     setActiveIndex(index);
     setMotionKey((value) => value + 1);
     setStatus("");
+    publishIntent(intentSlides[index].id);
   }
 
   function onSearch(event: FormEvent<HTMLFormElement>) {
@@ -441,7 +628,11 @@ function Hero() {
         </div>
         <div className="hero-vignette" />
         <div className="phase phase-one" ref={phaseOneRef}>
-          <h1>Local Experts | PRO Results</h1>
+          <h1>
+            Local Experts
+            <br />
+            PRO Results
+          </h1>
           <p className="hero-descriptor">
             DFW Real Estate Brokerage, award-winning support, industry-leading marketing, and proven systems.
           </p>
@@ -564,13 +755,17 @@ function Markets() {
 
 function LocalProof() {
   return (
-    <section className="local-proof" aria-labelledby="local-proof-title">
+    <section className="local-proof" id="about" aria-labelledby="local-proof-title">
       <div className="local-proof__inner">
         <div className="local-proof__glow" aria-hidden="true" />
-        <p className="local-proof__lead" data-reveal>
-          At Local Pro Realty, we&apos;re not just about buying and selling properties - we&apos;re about making your
-          real estate journey a seamless and rewarding experience.
-        </p>
+        <div className="local-proof__intro" data-reveal>
+          <p className="kicker">About</p>
+          <h2 id="local-proof-title">Local guidance with a brokerage built for better results.</h2>
+          <p>
+            LocalPRO Realty pairs neighborhood-level expertise with marketing, technology, and agent support designed
+            to make real estate decisions clearer from the first conversation to the closing table.
+          </p>
+        </div>
 
         <div className="local-proof__grid" data-reveal>
           <figure className="local-proof__showcase">
@@ -581,57 +776,47 @@ function LocalProof() {
                 loading="lazy"
               />
               <figcaption className="local-proof__float">
-                <b>4</b>
-                <span>market signals</span>
+                <b>Local first</b>
+                <span>Guidance shaped around the people, streets, and markets we serve.</span>
               </figcaption>
             </div>
-            <div className="local-proof__signalbar" aria-label="Local Pro Realty lead paths">
+            <div className="local-proof__signalbar" aria-label="Local Pro Realty service principles">
               <span>
-                <small>Lead paths</small>
-                <b>Buy, sell, and valuation</b>
+                <small>How we work</small>
+                <b>Clear advice, polished presentation, and steady execution.</b>
               </span>
               <div>
-                {proofHighlights.map((item) => (
-                  <span key={item.title}>
-                    <b>{item.title}</b>
-                    <small>{item.body}</small>
-                  </span>
-                ))}
+                <span>
+                  <b>Local context</b>
+                  <small>Market insight grounded in DFW and West Texas neighborhoods.</small>
+                </span>
+                <span>
+                  <b>Modern marketing</b>
+                  <small>Professional media, listing strategy, and stronger buyer visibility.</small>
+                </span>
+                <span>
+                  <b>Agent support</b>
+                  <small>A brokerage platform built to help agents serve clients well.</small>
+                </span>
               </div>
             </div>
           </figure>
 
           <aside className="local-proof__side">
-            <div className="local-proof__chart" aria-label="Dallas market snapshot">
-              <div className="local-proof__chart-card">
-                <small>Dallas market snapshot</small>
-                <strong>$826K</strong>
-                <em>Average Sales Price</em>
-                <div className="local-proof__bars" aria-hidden="true">
-                  {proofStats.map(([label, value], index) => (
-                    <span
-                      key={label}
-                      style={{ "--height": `${[68, 44, 76, 58][index]}%` } as CSSProperties}
-                      title={`${label}: ${value}`}
-                    />
-                  ))}
-                </div>
-                <div className="local-proof__mini-stats">
-                  {proofStats.slice(1).map(([label, value]) => (
-                    <span key={label}>
-                      <small>{label}</small>
-                      <b>{value}</b>
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <div className="local-proof__note" aria-label="What LocalPRO provides">
+              <span>What you can expect</span>
+              <ul>
+                <li>Practical advice before you make a move.</li>
+                <li>Listing preparation that respects presentation and timing.</li>
+                <li>Local market context without overwhelming jargon.</li>
+                <li>Responsive guidance from first question to final signature.</li>
+              </ul>
             </div>
 
-            <h2 id="local-proof-title">Everything you&apos;ll need along the way.</h2>
+            <h3>Built for clients who want clarity, not pressure.</h3>
             <p>
-              With experts throughout DFW and West Texas, we are hyper local, allowing us to walk alongside our
-              clients at every stage of their journey. With innovative technology and unrivaled service, we ensure
-              that your home is connected with buyers, locally and worldwide.
+              With experts throughout DFW and West Texas, LocalPRO helps buyers, sellers, and agents make confident
+              decisions with a calm process, strong local knowledge, and a higher standard of service.
             </p>
             <a href="#markets" aria-label="Explore featured markets">
               Explore featured markets <span aria-hidden="true">↗</span>
@@ -643,25 +828,71 @@ function LocalProof() {
   );
 }
 
-function Contact() {
-  return (
-    <footer className="site-footer" id="contact">
-      <div className="site-footer__inner">
-        <div className="site-footer__top">
-          <div className="site-footer__brand">
-            <a href={localProUrl} aria-label="Local Pro Realty home">
-              <strong>LocalPRO</strong>
-              <span>Realty</span>
-            </a>
-            <p>
-              Dedicated to enhancing the success of our agents so they can deliver superior guidance, service, and
-              outcomes for our clients.
-            </p>
-          </div>
+function BlogCapsules() {
+  const railRef = useRef<HTMLDivElement>(null);
 
-          <div className="site-footer__contact">
+  function move(direction: -1 | 1) {
+    const rail = railRef.current;
+    if (!rail) return;
+    rail.scrollBy({ left: direction * Math.min(rail.clientWidth * 0.86, 760), behavior: "smooth" });
+  }
+
+  return (
+    <section className="blog-capsules" id="blog" aria-labelledby="blog-capsules-title">
+      <div className="blog-capsules__inner">
+        <div className="blog-capsules__header" data-reveal>
+          <div>
+            <p className="kicker">News</p>
+            <h2 id="blog-capsules-title">Announcement and Pro Tips</h2>
+          </div>
+          <div className="blog-capsules__controls" aria-label="Scroll blog articles">
+            <button type="button" onClick={() => move(-1)} aria-label="Previous blog articles">
+              <span aria-hidden="true">&larr;</span>
+            </button>
+            <button type="button" onClick={() => move(1)} aria-label="Next blog articles">
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="blog-capsules__rail" ref={railRef} data-reveal>
+          {blogArticles.map((article) => (
+            <article className="blog-capsule" key={article.slug}>
+              <a href={`/blog/${article.slug}`} aria-label={`Read ${article.title}`}>
+                <span className="blog-capsule__media">
+                  <img src={article.image} alt="" loading="lazy" decoding="async" />
+                </span>
+                <span className="blog-capsule__copy">
+                  <span className="blog-capsule__eyebrow">{article.eyebrow}</span>
+                  <strong>{article.title}</strong>
+                  <span className="blog-capsule__meta">
+                    <span>{article.author}</span>
+                    <span>{article.published}</span>
+                    <span>{article.readTime}</span>
+                  </span>
+                  <span className="blog-capsule__body">{article.deck}</span>
+                  <span className="blog-capsule__link">Read article <span aria-hidden="true">&rarr;</span></span>
+                </span>
+              </a>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContactPro() {
+  return (
+    <section className="contact-pro" id="contact" aria-labelledby="footer-contact-title">
+      <div className="contact-pro__inner">
+        <section className="site-footer__contact" aria-labelledby="footer-contact-title">
+          <div>
             <span>Talk to a PRO</span>
-            <h2>Tricia Andrews</h2>
+            <h2 id="footer-contact-title">Tricia Andrews</h2>
+            <p>Direct local guidance for buying, selling, valuation, and next-step real estate planning.</p>
+          </div>
+          <div className="site-footer__contact-side">
             <div className="site-footer__actions">
               <a href="tel:+14694228841">Call Tricia</a>
               <a href="mailto:tricia@localprorealty.com">Email Tricia</a>
@@ -672,8 +903,16 @@ function Contact() {
               <span>700 Parker Sq, Flower Mound, TX 75028</span>
             </address>
           </div>
-        </div>
+        </section>
+      </div>
+    </section>
+  );
+}
 
+function Contact() {
+  return (
+    <footer className="site-footer">
+      <div className="site-footer__inner">
         <div className="site-footer__directory">
           {footerLinkGroups.map((group) => (
             <nav key={group.title} aria-label={`${group.title} links`} className="site-footer__group">
@@ -723,6 +962,8 @@ export default function Page() {
       <Hero />
       <Markets />
       <LocalProof />
+      <BlogCapsules />
+      <ContactPro />
       <Contact />
     </main>
   );

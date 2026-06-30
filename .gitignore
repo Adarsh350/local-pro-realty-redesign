@@ -21,3 +21,4 @@ build/
 # Unused low-resolution client grabs copied during exploration.
 public/images/localpro-*
 !public/images/localpro-door-consultation.png
+.vercel
