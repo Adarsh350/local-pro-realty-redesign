@@ -22,4 +22,3 @@ build/
 public/images/localpro-*
 !public/images/localpro-door-consultation.png
 .vercel
-graphify-out/
